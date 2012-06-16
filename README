@@ -1,0 +1,58 @@
+This is a modified version of a Ping library originally written by Blake Foster (http://blake-foster.com/contact.php) that can be downloaded here: http://www.blake-foster.com/projects/ICMPPing.zip
+
+I modified it to return just the useful bits of information suitable for parsing.
+
+Example:
+
+  #include <ICMPPing.h>
+
+  byte theIp[] = { 192, 168, 1, 1 };
+  char returnBuffer[20];
+  int timeout = 4; // seconds
+  SOCKET pingSocket = 3;
+  
+  ICMPPing ping(pingSocket);
+  
+  ping(timeout, theIp, returnBuffer);
+  
+  if (strncmp(returnBuffer, "T", 1) == 0)
+  {
+      // ping timed out
+  }
+  
+  if (strncmp(returnBuffer, "F", 1) == 0)
+  {
+      // ping failed
+  }
+  
+  // returnBuffer contains something like "32|104|200"
+  //                                       ^  ^   ^
+  //                                       |  |   |
+  // Request size --------------------------  |   |
+  // Ping time in milliseconds ----------------   |
+  // Time to live in milliseconds -----------------
+
+  
+ICMPPing.cpp:52
+
+    Changed:
+        sprintf(result, "sendEchoRequest failed.");
+    
+    To:
+        sprintf(result, "F");
+
+ICMPPing.cpp:62
+
+    Changed:
+        sprintf(result, "Reply[%d] from: %d.%d.%d.%d: bytes=%d time=%ldms TTL=%d", i + 1, replyAddr[0], replyAddr[1], replyAddr[2], replyAddr[3], REQ_DATASIZE, time, TTL);
+    
+    To:
+        sprintf(result, "%d|%ld|%d", REQ_DATASIZE, time, TTL);
+        
+ICMPPing.cpp:68
+
+    Changed:
+        sprintf(result, "Request Timed Out");
+        
+    To:
+        sprintf(result, "T");
